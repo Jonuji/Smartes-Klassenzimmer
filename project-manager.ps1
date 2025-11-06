@@ -208,6 +208,11 @@ function Clone-Repositories {
         Write-Host "[OK] Klonen abgeschlossen!" -ForegroundColor $Colors.Success
     }
     
+    # VSCode Konfiguration erstellen
+    Write-Host ""
+    Write-Host "Erstelle VSCode Konfiguration..." -ForegroundColor $Colors.Info
+    Create-VSCodeConfig
+    
     Pause-WithMessage
 }
 
@@ -799,6 +804,190 @@ function Pause-WithMessage {
     Write-Host ""
     Write-Host "Druecken Sie eine beliebige Taste zum Fortfahren..." -ForegroundColor $Colors.Info
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+}
+
+function Create-VSCodeConfig {
+    # Root VSCode Config
+    $rootVSCodeDir = ".vscode"
+    
+    if (-not (Test-Path $rootVSCodeDir)) {
+        New-Item -ItemType Directory -Path $rootVSCodeDir -Force | Out-Null
+    }
+    
+    # Extensions
+    $extensionsJson = @"
+{
+  "recommendations": [
+    "svelte.svelte-vscode",
+    "fill-labs.dependi",
+    "pinage404.git-extension-pack"
+  ]
+}
+"@
+    $extensionsPath = Join-Path $rootVSCodeDir "extensions.json"
+    Set-Content -Path $extensionsPath -Value $extensionsJson -Encoding UTF8
+    
+    Write-Host "[OK] VSCode Konfiguration erstellt" -ForegroundColor $Colors.Success
+    
+    # MCP Server Config
+    $mcpJson = @"
+{
+  "servers": {
+    "svelte": {
+      "url": "https://mcp.svelte.dev/mcp"
+    }
+  }
+}
+"@
+    $mcpPath = Join-Path $rootVSCodeDir "mcp.json"
+    Set-Content -Path $mcpPath -Value $mcpJson -Encoding UTF8
+    
+    Write-Host "[OK] MCP Konfiguration erstellt" -ForegroundColor $Colors.Success
+    
+    # AGENTS.md im Root erstellen
+    $agentsMd = @"
+# AI Agent Guidelines
+
+## Projekt-Struktur
+
+Dieses Projekt besteht aus zwei Teilen:
+- **Frontend:** Svelte 5 (in Smartes-Klassenzimmer-Frontend/)
+- **Backend:** NestJS (in Smartes-Klassenzimmer-Backend/)
+
+---
+
+## Frontend - Svelte 5
+
+### Framework Version
+
+**WICHTIG:** Das Frontend verwendet **Svelte 5**!
+
+- Verwende KEINE Svelte 4 Syntax
+- Nutze Svelte 5 Runes (`$state`, `$derived`, `$effect`, etc.)
+- Verwende die neue Svelte 5 Component API
+
+### MCP Server
+
+Fuer Svelte-bezogene Fragen und Code:
+- Nutze den **Svelte MCP Server** unter https://mcp.svelte.dev/mcp
+- Der MCP Server bietet offizielle Svelte 5 Dokumentation
+- Bei Unsicherheiten zur Svelte 5 Syntax: MCP Server konsultieren
+
+### Svelte 5 Best Practices
+
+- Verwende Runes fuer reaktive State
+- Nutze `$props()` statt export let
+- Verwende `$bindable()` fuer Two-Way-Binding
+- Snippets statt Slots (wo sinnvoll)
+
+### Beispiel (Svelte 5):
+
+```
+<script>
+  let { value = `$bindable(0), max = 100 } = `$props();
+  
+  let percentage = `$derived((value / max) * 100);
+  
+  `$effect(() => {
+    console.log('Value changed:', value);
+  });
+</script>
+
+<div class="progress" style="width: {percentage}%"></div>
+```
+
+### Ressourcen
+
+- [Svelte 5 Docs](https://svelte.dev/docs/svelte/overview)
+- [Svelte 5 Migration Guide](https://svelte.dev/docs/svelte/v5-migration-guide)
+
+---
+
+## Backend - NestJS
+
+### Framework
+
+Das Backend nutzt **NestJS** mit TypeScript.
+
+**WICHTIG:** Keine Svelte-Syntax im Backend!
+
+### NestJS Best Practices
+
+- Verwende Dependency Injection
+- Folge der modularen Architektur
+- DTOs fuer Validierung
+- Guards fuer Authentication/Authorization
+- Interceptors fuer Logging/Transformation
+- Pipes fuer Validierung
+
+### Projekt-Struktur
+
+```
+src/
+  modules/
+    users/
+      users.controller.ts
+      users.service.ts
+      users.module.ts
+      dto/
+      entities/
+  common/
+    guards/
+    interceptors/
+    decorators/
+  main.ts
+```
+
+### Beispiel (NestJS Controller):
+
+```
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Get()
+  @UseGuards(AuthGuard)
+  findAll() {
+    return this.usersService.findAll();
+  }
+
+  @Post()
+  @UsePipes(ValidationPipe)
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
+}
+```
+
+### Ressourcen
+
+- [NestJS Documentation](https://docs.nestjs.com/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [NestJS Best Practices](https://docs.nestjs.com/fundamentals)
+
+---
+
+## Wichtige Regeln
+
+1. **Frontend (Svelte 5):**
+   - Nutze Svelte MCP Server
+   - Verwende IMMER Svelte 5 Syntax
+   - Keine Svelte 4 Features
+
+2. **Backend (NestJS):**
+   - Verwende NICHT den Svelte MCP Server
+   - Keine Svelte-Syntax
+   - Halte dich an NestJS Conventions
+
+3. **Allgemein:**
+   - Schreibe sauberen, wartbaren Code
+   - Folge den Projekt-Standards
+   - Dokumentiere komplexe Logik
+"@
+    $agentsPath = "AGENTS.md"
+    Set-Content -Path $agentsPath -Value $agentsMd -Encoding UTF8
+    
+    Write-Host "[OK] AGENTS.md erstellt" -ForegroundColor $Colors.Success
 }
 
 # ============================================
