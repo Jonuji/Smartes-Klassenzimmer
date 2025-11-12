@@ -1,3 +1,8 @@
+> [!WARNING]
+> **NICHT** die repo clonen, sondern [über einen download](#-schritt-3-script-herunterladen) das script herunterladen!
+
+> Falls nicht, wird VSCode die zwei Repos im Ordner nicht erkennen, um diese automatisch zu initialisieren, das erschwert die Arbeit mit Git
+
 # Smartes Klassenzimmer 🎓
 
 Willkommen! Diese Anleitung hilft dir, das Projekt **schnell und einfach** einzurichten.
